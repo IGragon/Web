@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Страница профиля</h1>
+<p>Здравствуй, {{session['username']}}!</p>
+{% if admin == True %}
+<a class="btn btn-success" href="/add_book" role="button">Добавить книгу</a>
+{% endif %}
+<a class="btn btn-secondary" href="/logout" role="button">Выйти</a>
+{% endblock %}
