@@ -3,9 +3,9 @@
 {% block content %}
 <h1>{{title}}</h1>
 <div>
-<form action="" method="post">
-    <input type="submit" class="btn btn-{{button[1]}}" value="{{button[0]}}">
-</form>
+    <form action="" method="post">
+        <input type="submit" class="btn btn-{{button[1]}}" value="{{button[0]}}">
+    </form>
 </div>
 <br>
 <img src="../static/img/{{img}}">
@@ -13,4 +13,57 @@
 <p> Дата написания(публикации): {{date}} </p>
 <p class="card-text"> Описание: {{about}}</p>
 <a href="../static/files/{{file}}" class="btn btn-info">Скачать</a>
+<br>
+<br>
+<h2> Отзывы: </h2>
+<br>
+<div style="background: #98ff98">
+    <h3> Оставить свой отзыв: </h3>
+    <form action="" method="post" enctype="multipart/form-data" novalidate>
+        {{ comment.hidden_tag() }}
+        <p>
+            {{ comment.title.label }}<br>
+            {{ comment.title }}<br>
+            {% for error in comment.title.errors %}
+        <div class="alert alert-danger" role="alert">
+            {{ error }}
+        </div>
+        {% endfor %}
+        </p>
+        <p>
+            {{ comment.rating.label }}<br>
+            {{ comment.rating }}<br>
+            {% for error in comment.rating.errors %}
+        <div class="alert alert-danger" role="alert">
+            {{ error }}
+        </div>
+        {% endfor %}
+        </p>
+        <p>
+            {{ comment.about.label }}<br>
+            {{ comment.about }}<br>
+            {% for error in comment.about.errors %}
+        <div class="alert alert-danger" role="alert">
+            {{ error }}
+        </div>
+        {% endfor %}
+        </p>
+        <p>{{ comment.submit() }}</p>
+    </form>
+</div>
+<div>
+    {% for comm in comments%}
+    <div class="card" style="width: 18rem;">
+        <div class="card-body">
+            <h5 class="card-title">{{comm.title}}</h5>
+            <h6 class="card-subtitle mb-2 text-muted">Оценка: {{comm.rating}}</h6>
+            <p class="card-text">{{comm.about}}</p>
+            {% if session['id'] == 1 %}
+            <a href="/delete_comment/{{comm.id}}" class="btn btn-danger"> Удалить отзыв </a>
+            {% endif %}
+        </div>
+    </div>
+    <br>
+    {% endfor %}
+</div>
 {% endblock %}

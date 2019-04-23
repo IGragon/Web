@@ -59,8 +59,7 @@
     {% endfor %}
     </p>
     <p>
-        {{ form.check.label }}<br>
-        {{ form.check }}<br>
+        {{ form.check }} {{ form.check.label }}<br>
         {% for error in form.check.errors %}
     <div class="alert alert-danger" role="alert">
         {{ error }}

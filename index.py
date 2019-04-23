@@ -2,7 +2,7 @@ from flask import Flask, session, redirect, render_template, flash, url_for, req
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileRequired
-from wtforms import StringField, SubmitField, TextAreaField, PasswordField, DateField, BooleanField
+from wtforms import StringField, SubmitField, TextAreaField, PasswordField, BooleanField, SelectField
 from wtforms.validators import DataRequired, Email, Length
 from PIL import Image
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -37,8 +37,8 @@ class LoginForm(FlaskForm):
 class AddBookForm(FlaskForm):
     title = StringField('Название книги', validators=[DataRequired(), Length(1, 120)])
     author = StringField('Автор', validators=[DataRequired()])
-    about = TextAreaField('О книги', validators=[DataRequired(), Length(100, 1000)])
-    date = StringField('Дата ниписания(публикации)', validators=[DataRequired()])
+    about = TextAreaField('О книге', validators=[DataRequired(), Length(100, 1000)])
+    date = StringField('Дата публикации', validators=[DataRequired()])
     img = FileField('Обложка', validators=[FileRequired()])
     book = FileField('Загрузить книгу', validators=[FileRequired()])
     check = BooleanField('Я проверил все поля', validators=[DataRequired()])
@@ -47,6 +47,17 @@ class AddBookForm(FlaskForm):
 
 class AddBookToFavourite(FlaskForm):
     submit = SubmitField('')
+
+
+class CommentForm(FlaskForm):
+    title = StringField('Заголовок', validators=[DataRequired(), Length(1, 120)])
+    rating = SelectField('Оценка', choices=[('★★★★★', '★★★★★'),
+                                            ('★★★★', '★★★★'),
+                                            ('★★★', '★★★'),
+                                            ('★★', '★★'),
+                                            ('★', '★')], validators=[DataRequired()])
+    about = TextAreaField('Комментарий', validators=[DataRequired(), Length(1, 1000)])
+    submit = SubmitField('Отправить')
 
 
 class Bookworm(db.Model):
@@ -76,6 +87,19 @@ class Book(db.Model):
     def __repr__(self):
         return '<Book {} {} {} {} {}>'.format(
             self.id, self.title, self.author, self.img, self.book)
+
+
+class Comment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(120), unique=False, nullable=False)
+    rating = db.Column(db.String(5), unique=False, nullable=False)
+    about = db.Column(db.String(1000), unique=False, nullable=False)
+    book_id = db.Column(db.Integer, db.ForeignKey('book.id'), nullable=False)
+    book = db.relationship('Book', backref=db.backref('Comment', lazy=True))
+
+    def __repr__(self):
+        return '<Comment {} {} {} {} {}>'.format(
+            self.id, self.title, self.rating, self.book_id, self.book)
 
 
 def resize_image(image):
@@ -141,8 +165,8 @@ def profile():
     if 'id' not in session:
         return redirect('/index')
     user = Bookworm.query.filter_by(username=session['username']).first()
-    books = list(map(lambda x: Book.query.filter_by(id=x).first(), map(int, user.favourite_books.split())))
-    print(books)
+    books = list(map(lambda x: Book.query.filter_by(id=x).first(),
+                     map(int, user.favourite_books.split()))) if user.favourite_books else []
     return render_template('profile.html',
                            session=session,
                            admin=session['id'] == 1,
@@ -270,6 +294,17 @@ def books(sort):
                                session=session,
                                title='Все книги',
                                sort=True)
+    elif sort == 'author_sorting':
+        books_list = [
+            sorted(Book.query.all(),
+                   key=lambda x: (x.author, x.title))[i: i + 3 if i + 3 < len(Book.query.all()) else None] for i
+            in
+            range(0, len(Book.query.all()), 3)]
+        return render_template('books.html',
+                               books=books_list,
+                               session=session,
+                               title='Все книги',
+                               sort=True)
 
 
 @app.route('/book/<int:book_id>', methods=['GET', 'POST'])
@@ -278,6 +313,15 @@ def book(book_id):
         return redirect('/login')
     user = Bookworm.query.filter_by(id=session['id']).first()
     favourite_books = user.favourite_books
+    comment_form = CommentForm()
+    if comment_form.validate_on_submit():
+        comment = Comment(title=comment_form.title.data,
+                          rating=comment_form.rating.data,
+                          about=comment_form.about.data)
+        book = Book.query.filter_by(id=int(book_id)).first()
+        book.Comment.append(comment)
+        db.session.commit()
+        return redirect('/book/{}'.format(book_id))
     if request.method == 'POST':
         if not favourite_books:
             user.favourite_books = str(book_id)
@@ -303,13 +347,30 @@ def book(book_id):
                   'warning') if (not favourite_books or
                                  str(book_id) not in favourite_books.split()) else ('Удалить из избранного',
                                                                                     'danger')
+        comments = [comm for comm in Comment.query.all() if comm.book_id == book_id]
+        comments = sorted(comments, key=lambda x: (-len(x.rating), x.title))
         return render_template('book.html', title=title,
                                author=author,
                                about=about,
                                date=date,
                                img=img,
                                file=file,
-                               button=button)
+                               button=button,
+                               comment=comment_form,
+                               comments=comments,
+                               session=session)
+
+
+@app.route('/delete_comment/<int:comment_id>')
+def delete_comment(comment_id):
+    if 'id' not in session or session['id'] != 1:
+        return redirect('/index')
+    comment = Comment.query.filter_by(id=comment_id).first()
+    book_id = comment.book_id
+    db.session.commit()
+    db.session.delete(comment)
+    db.session.commit()
+    return redirect('/book/{}'.format(book_id))
 
 
 if __name__ == '__main__':
