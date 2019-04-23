@@ -2,22 +2,26 @@
 
 {% block content %}
 <div class="d-flex justify-content-center">
-<h1>Добро пожаловать на главную страницу!</h1>
+    <h1>Добро пожаловать на главную страницу!</h1>
 </div>
 
 <div class="d-flex justify-content-center">
-<h2>Можете почитать</h2>
+    <h2>Можете почитать</h2>
 </div>
-<div class="d-flex justify-content-between">
-{% for book in sample(Book.query.all(), 3) %}
-<div class="card" style="width: 18rem;">
-  <img class="card-img-top" src="static/img/{{ book.img }}" alt="Card image cap">
-  <div class="card-body">
-    <h5 class="card-title">{{book.title}}</h5>
-    <p class="card-text">{{book.about}}</p>
-    <a href="#" class="btn btn-primary">See more</a>
-  </div>
+<div class="d-flex justify-content-around">
+    {% for book in sample(Book.query.all(), n) %}
+    <div class="card" style="width: 18rem;">
+        <img class="card-img-top" src="static/img/{{ book.img }}" alt="Обложка книги не найдена">
+        <div class="card-body">
+            <h5 class="card-title">{{book.title}}</h5>
+            <p class="card-text">{{book.about[:50]}}...</p>
+            <a href="/book/{{book.id}}" class="btn btn-primary">Смотреть подробнее</a>
+        </div>
+    </div>
+    {% endfor %}
 </div>
-{% endfor %}
+<br>
+<div class="d-flex justify-content-center">
+    <a class="btn btn-primary btn-lg" href="/books/not_sorted">Смотреть все книги</a>
 </div>
 {% endblock %}

@@ -58,6 +58,15 @@
     </div>
     {% endfor %}
     </p>
+    <p>
+        {{ form.check.label }}<br>
+        {{ form.check }}<br>
+        {% for error in form.check.errors %}
+    <div class="alert alert-danger" role="alert">
+        {{ error }}
+    </div>
+    {% endfor %}
+    </p>
     <p>{{ form.submit() }}</p>
 </form>
 {% endblock %}

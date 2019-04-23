@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Все книги</h1>
+<div class="d-flex justify-content-left">
+    <h4> Сортировать по: </h4>
+    <br>
+    <a href="/books/abc_sorting" class="btn btn-secondary">Алфавиту</a>
+</div>
+<br>
+{% if sort == True %}
+<div class="d-flex justify-content-left">
+    <a href="/books/default" class="btn btn-danger">Сбросить сортировку</a>
+</div>
+<br>
+{% endif %}
+{% for books_block in books %}
+<div class="d-flex justify-content-around">
+    {% for book in books_block%}
+    <div class="card" style="width: 18rem;">
+        <img class="card-img-top" src="../static/img/{{ book.img }}" alt="Обложка не найдена">
+        <div class="card-body">
+            <h5 class="card-title">{{book.title}}</h5>
+            <p class="card-text">{{book.about[:50]}}...</p>
+            <a href="/book/{{book.id}}" class="btn btn-primary">Смотреть подробнее</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+<br>
+{% endfor %}
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Удаление книг</h1>
+<form method="post">
+    <p><select name="book">
+        {% for book in Book.query.all() %}
+        <option>{{book.title}}</option>
+        {% endfor %}
+    </select></p>
+    <input type="checkbox" name="confirm" class="form-check-input">
+    <input type="submit" value="Удалить">
+</form>
+{% endblock %}

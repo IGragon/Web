@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>{{title}}</h1>
+<div>
+<form action="" method="post">
+    <input type="submit" class="btn btn-{{button[1]}}" value="{{button[0]}}">
+</form>
+</div>
+<br>
+<img src="../static/img/{{img}}">
+<p> Автор: {{author}} </p>
+<p> Дата написания(публикации): {{date}} </p>
+<p class="card-text"> Описание: {{about}}</p>
+<a href="../static/files/{{file}}" class="btn btn-info">Скачать</a>
+{% endblock %}
