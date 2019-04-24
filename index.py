@@ -347,7 +347,7 @@ def book(book_id):
                   'warning') if (not favourite_books or
                                  str(book_id) not in favourite_books.split()) else ('Удалить из избранного',
                                                                                     'danger')
-        comments = [comm for comm in Comment.query.all() if comm.book_id == book_id]
+        comments = book.Comment
         comments = sorted(comments, key=lambda x: (-len(x.rating), x.title))
         return render_template('book.html', title=title,
                                author=author,
