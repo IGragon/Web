@@ -139,16 +139,19 @@ def login():
                 return render_template('login.html',
                                        form=form,
                                        session=session,
-                                       error='password')
+                                       error='password',
+                                       title='Логин')
         except Exception:
             return render_template('login.html',
                                    form=form,
                                    session=session,
-                                   error='login')
+                                   error='login',
+                                   title='Логин')
     return render_template('login.html',
                            form=form,
                            session=session,
-                           error=False)
+                           error=False,
+                           title='Логин')
 
 
 @app.route('/logout')
@@ -172,7 +175,8 @@ def profile():
                            admin=session['id'] == 1,
                            user=user,
                            books=books,
-                           len=len)
+                           len=len,
+                           title='Профиль')
 
 
 @app.route('/add_book', methods=['GET', 'POST'])
@@ -371,6 +375,22 @@ def delete_comment(comment_id):
     db.session.delete(comment)
     db.session.commit()
     return redirect('/book/{}'.format(book_id))
+
+
+@app.route('/about')
+def about():
+    if 'username' not in session:
+        return redirect('/login')
+    return render_template('about.html', session=session,
+                           title='О нас')
+
+
+@app.route('/donate')
+def donate():
+    if 'username' not in session:
+        return redirect('/login')
+    return render_template('donate.html', session=session,
+                           title='Поддержка')
 
 
 if __name__ == '__main__':

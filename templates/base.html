@@ -48,8 +48,8 @@
                     <a class="nav-item nav-link active" href="http://localhost:8080/">Домой <span class="sr-only">(current)</span></a>
                     <a class="nav-item nav-link" href="/books/default">Книги</a>
                     <!-- <a class="nav-item nav-link" href="#">Авторы</a> -->
-                    <a class="nav-item nav-link" href="#">О нас</a>
-                    <a class="nav-item nav-link disabled" href="#">Поддержать</a>
+                    <a class="nav-item nav-link" href="/about">О нас</a>
+                    <a class="nav-item nav-link disabled" href="/donate">Поддержать</a>
                     {% if 'username' in session %}
                     <a class="btn btn-light" href="/profile" role="button">{{session['username']}}</a>
                 </div>
