@@ -247,14 +247,21 @@ def change_book():
         if request.form.get('confirm_book'):
             book_title = request.form.get('book')
             book = Book.query.filter_by(title=book_title).first()
-            return render_template('change_book.html', Book=Book, book=book, choose=False)
-        else:
-            pass
-    book_title = request.form.get('book')
-    book = Book.query.filter_by(title=book_title).first()
-    db.session.delete(book)
-    db.session.commit()
-    return redirect('/profile')
+            return render_template('change_book.html', Book=Book, cur_book=book, choose=False)
+        elif request.form.get('change_book'):
+            book_id = request.form.get('book_id')
+            title = request.form.get('title')
+            author = request.form.get('author')
+            book_about = request.form.get('about')
+            date = request.form.get('date')
+            book = Book.query.filter_by(id=book_id).first()
+
+            book.title = title
+            book.author = author
+            book.about = book_about
+            book.date = date
+            db.session.commit()
+            return redirect('/profile')
 
 
 @app.route('/register', methods=['GET', 'POST'])

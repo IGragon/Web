@@ -9,17 +9,42 @@
         <option>{{book.title}}</option>
         {% endfor %}
     </select></p>
-    <input type="checkbox" name="confirm_book" class="form-check-input">
+    <div class="p-4 d-flex justify-content-start">
+        <p><input type="checkbox" name="confirm_book" class="form-check-input" required></p>
+        <p>Подтвердить выбор</p>
+    </div>
     <input type="submit" value="Выбрать">
 </form>
+
 {% else %}
 <h1>Изменение книги</h1>
 <form method="post">
-
-    <input type="text" value="{{book.title}}" name="title">
-    <input type="text" value="{{book.author}}" name="author">
-    <input type="text" value="{{book.about}}" name="about">
-    <input type="text" value="{{book.date}}" name="date">
+    <input type="number" value="{{cur_book.id}}" name="book_id" style="display: none">
+    <div>
+        <p>Название книги</p>
+        <input type="text" value="{{cur_book.title}}" name="title">
+    </div>
+    <br>
+    <div>
+        <p>Автор</p>
+        <input type="text" value="{{cur_book.author}}" name="author">
+    </div>
+    <br>
+    <div>
+        <p>О книге</p>
+        <p><textarea rows="10" cols="45" name="about">{{cur_book.about}}</textarea></p>
+    </div>
+    <br>
+    <div>
+        <p>Дата публикации</p>
+        <input type="text" value="{{cur_book.date}}" name="date">
+    </div>
+    <br>
+    <div class="p-4 d-flex justify-content-start">
+        <p><input type="checkbox" name="change_book" class="form-check-input" required> Подтвердить изменения </p>
+        <br>
+    </div>
     <input type="submit" value="Изменить">
 </form>
+{% endif %}
 {% endblock %}
