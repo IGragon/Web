@@ -1,10 +1,25 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "base.html" %}
 
-</body>
-</html>
+{% block content %}
+{% if choose == True %}
+<h1>Выбор книги для изменения</h1>
+<form method="post">
+    <p><select name="book">
+        {% for book in Book.query.all() %}
+        <option>{{book.title}}</option>
+        {% endfor %}
+    </select></p>
+    <input type="checkbox" name="confirm_book" class="form-check-input">
+    <input type="submit" value="Выбрать">
+</form>
+{% else %}
+<h1>Изменение книги</h1>
+<form method="post">
+
+    <input type="text" value="{{book.title}}" name="title">
+    <input type="text" value="{{book.author}}" name="author">
+    <input type="text" value="{{book.about}}" name="about">
+    <input type="text" value="{{book.date}}" name="date">
+    <input type="submit" value="Изменить">
+</form>
+{% endblock %}

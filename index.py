@@ -237,17 +237,24 @@ def del_book():
     return redirect('/profile')
 
 
-'''@app.route('/change_book', methods=['GET', 'POST'])
+@app.route('/change_book', methods=['GET', 'POST'])
 def change_book():
     if session['id'] != 1:
         return redirect('/index')
     if request.method == 'GET':
-        return render_template('delete_book.html', Book=Book)
+        return render_template('change_book.html', Book=Book, book=0, choose=True)
+    elif request.method == 'POST':
+        if request.form.get('confirm_book'):
+            book_title = request.form.get('book')
+            book = Book.query.filter_by(title=book_title).first()
+            return render_template('change_book.html', Book=Book, book=book, choose=False)
+        else:
+            pass
     book_title = request.form.get('book')
     book = Book.query.filter_by(title=book_title).first()
     db.session.delete(book)
     db.session.commit()
-    return redirect('/profile')'''
+    return redirect('/profile')
 
 
 @app.route('/register', methods=['GET', 'POST'])
