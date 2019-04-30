@@ -1,8 +1,9 @@
-from flask import Flask, session, redirect, render_template, flash, url_for, request
+from flask import Flask, session, redirect, render_template, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileRequired
-from wtforms import StringField, SubmitField, TextAreaField, PasswordField, BooleanField, SelectField
+from wtforms import StringField, SubmitField, TextAreaField, \
+    PasswordField, BooleanField, SelectField
 from wtforms.validators import DataRequired, Email, Length
 from PIL import Image
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -10,56 +11,91 @@ from werkzeug.utils import secure_filename
 from random import sample
 import os
 
+# Импортируем модули
+
+# Инициализируем приложение
+# И настраеваем
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///OnLib_data.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPPLOAD_FOLDER'] = 'static/files/'
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
+
+# Инициализируем базу данных
 db = SQLAlchemy(app)
 
 
+# форма регистрации
 class RegisterForm(FlaskForm):
-    username = StringField('Имя', validators=[DataRequired(), Length(1, 120)])
+    username = StringField('Имя', validators=[DataRequired(),
+                                              Length(1, 120)])
     name = StringField('Настоящее имя', validators=[DataRequired()])
     surname = StringField('Фамилия', validators=[DataRequired()])
-    email = StringField('Email', validators=[DataRequired(), Email()])
-    password = PasswordField('Пароль', validators=[DataRequired(), Length(4, 120)])
-    about = TextAreaField('О себе', validators=[DataRequired(), Length(1, 1000)])
+    email = StringField('Email', validators=[DataRequired(),
+                                             Email()])
+    password = PasswordField('Пароль', validators=[DataRequired(),
+                                                   Length(4, 120)])
+    about = TextAreaField('О себе', validators=[DataRequired(),
+                                                Length(1, 1000)])
     submit = SubmitField('Присоединиться!')
 
 
+# форма авторизации
 class LoginForm(FlaskForm):
     login = StringField('Логин', validators=[DataRequired()])
     password = PasswordField('Пароль', validators=[DataRequired()])
     submit = SubmitField('Войти')
 
 
+# форма добавления книг
 class AddBookForm(FlaskForm):
-    title = StringField('Название книги', validators=[DataRequired(), Length(1, 120)])
+    title = StringField('Название книги',
+                        validators=[DataRequired(),
+                                    Length(1, 120)])
     author = StringField('Автор', validators=[DataRequired()])
-    about = TextAreaField('О книге', validators=[DataRequired(), Length(100, 1000)])
-    date = StringField('Дата публикации', validators=[DataRequired()])
+    about = TextAreaField('О книге', validators=[DataRequired(),
+                                                 Length(100, 1000)])
+    date = StringField('Дата публикации',
+                       validators=[DataRequired()])
     img = FileField('Обложка', validators=[FileRequired()])
     book = FileField('Загрузить книгу', validators=[FileRequired()])
-    check = BooleanField('Я проверил все поля', validators=[DataRequired()])
+    check = BooleanField('Я проверил все поля',
+                         validators=[DataRequired()])
     submit = SubmitField('Создать')
 
 
+# форма добавления в избранное
 class AddBookToFavourite(FlaskForm):
     submit = SubmitField('')
 
 
+# форма для комментария
 class CommentForm(FlaskForm):
-    title = StringField('Заголовок', validators=[DataRequired(), Length(1, 120)])
+    title = StringField('Заголовок', validators=[DataRequired(),
+                                                 Length(1, 120)])
     rating = SelectField('Оценка', choices=[('★★★★★', '★★★★★'),
                                             ('★★★★', '★★★★'),
                                             ('★★★', '★★★'),
                                             ('★★', '★★'),
-                                            ('★', '★')], validators=[DataRequired()])
-    about = TextAreaField('Комментарий', validators=[DataRequired(), Length(1, 1000)])
+                                            ('★', '★')],
+                         validators=[DataRequired()])
+    about = TextAreaField('Комментарий', validators=[DataRequired(),
+                                                     Length(1,
+                                                            1000)])
     submit = SubmitField('Отправить')
 
 
+# класс пользователя
+# раз книжный магазин,
+# то почему бы пользователи не были книжными червями
+# уникальный id
+# ник пользователя
+# его имя
+# фамилия
+# информация введенная пользователем
+# электронная почта
+# пароль
+# список любимых книг
 class Bookworm(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
@@ -67,14 +103,25 @@ class Bookworm(db.Model):
     surname = db.Column(db.String(80), unique=False, nullable=False)
     about = db.Column(db.String(1000), unique=False, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    password = db.Column(db.String(120), unique=False, nullable=False)
-    favourite_books = db.Column(db.String(1000), unique=False, nullable=True)
+    password = db.Column(db.String(120), unique=False,
+                         nullable=False)
+    favourite_books = db.Column(db.String(1000), unique=False,
+                                nullable=True)
 
     def __repr__(self):
         return '<Bookworm {} {} {} {} {}>'.format(
-            self.id, self.username, self.name, self.surname, self.password)
+            self.id, self.username, self.name, self.surname,
+            self.password)
 
 
+# класс книг
+# уникальный id
+# название книги
+# её автор
+# о книге
+# дата публикации
+# ссылка на обложку
+# ссылка на книгу
 class Book(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(120), unique=True, nullable=False)
@@ -89,25 +136,36 @@ class Book(db.Model):
             self.id, self.title, self.author, self.img, self.book)
 
 
+# класс комментариев
+# уникальный id
+# заголовок
+# выставленный рейтинг
+# текст коммента
+# привязка к книге
 class Comment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(120), unique=False, nullable=False)
     rating = db.Column(db.String(5), unique=False, nullable=False)
     about = db.Column(db.String(1000), unique=False, nullable=False)
-    book_id = db.Column(db.Integer, db.ForeignKey('book.id'), nullable=False)
-    book = db.relationship('Book', backref=db.backref('Comment', lazy=True))
+    book_id = db.Column(db.Integer, db.ForeignKey('book.id'),
+                        nullable=False)
+    book = db.relationship('Book', backref=db.backref('Comment',
+                                                      lazy=True))
 
     def __repr__(self):
         return '<Comment {} {} {} {} {}>'.format(
-            self.id, self.title, self.rating, self.book_id, self.book)
+            self.id, self.title, self.rating, self.book_id,
+            self.book)
 
 
+# метод подгона изображения для обложки книги
 def resize_image(image):
     im = Image.open('static/img/' + image)
     im = im.resize((286, 429), resample=0, box=None)
     im.save('static/img/' + image)
 
 
+# главная страница
 @app.route('/')
 @app.route('/index')
 def index():
@@ -122,18 +180,25 @@ def index():
                            none=None)
 
 
+# страница авторизации
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    # проверяем на авторизованного пользователя
+    # если уже авторизован, посылаем на славную страницу
     if 'id' in session:
         return redirect('/index')
     form = LoginForm()
     if form.validate_on_submit():
         try:
-            user_password = Bookworm.query.filter_by(username=form.login.data).first().password
+            user_password = Bookworm.query. \
+                filter_by(username=form.
+                          login.data).first().password
             password = form.password.data
             if check_password_hash(user_password, password):
                 session['username'] = form.login.data
-                session['id'] = Bookworm.query.filter_by(username=form.login.data).first().id
+                session['id'] = Bookworm.query. \
+                    filter_by(username=form.
+                              login.data).first().id
                 return redirect('/index')
             else:
                 return render_template('login.html',
@@ -154,8 +219,11 @@ def login():
                            title='Логин')
 
 
+# выход из аккаунта
 @app.route('/logout')
 def logout():
+    # проверяем на авторизованного пользователя
+    # если не авторизован, посылаем на славную страницу
     if 'id' not in session:
         return redirect('/index')
     session.pop('username', 0)
@@ -163,13 +231,19 @@ def logout():
     return redirect('/login')
 
 
+# страница профиля
 @app.route('/profile')
 def profile():
+    # проверяем на авторизованного пользователя
+    # если не авторизован, посылаем на славную страницу
     if 'id' not in session:
         return redirect('/index')
-    user = Bookworm.query.filter_by(username=session['username']).first()
+    user = Bookworm.query.filter_by(username=session['username']). \
+        first()
     books = list(map(lambda x: Book.query.filter_by(id=x).first(),
-                     map(int, user.favourite_books.split()))) if user.favourite_books else []
+                     map(int,
+                         user.favourite_books.split()))) if \
+        user.favourite_books else []
     return render_template('profile.html',
                            session=session,
                            admin=session['id'] == 1,
@@ -179,8 +253,11 @@ def profile():
                            title='Профиль')
 
 
+# добавление книги
 @app.route('/add_book', methods=['GET', 'POST'])
 def add_book():
+    # проверяем на авторизованного администратора
+    # если не админ, посылаем на славную страницу
     if 'id' not in session:
         return redirect('/index')
     if session['id'] != 1:
@@ -188,12 +265,14 @@ def add_book():
     form = AddBookForm()
     if form.validate_on_submit():
         img_f = form.img.data
-        img_name = form.title.data + form.author.data + form.date.data + '.' + \
+        img_name = form.title.data + form.author.data + \
+                   form.date.data + '.' + \
                    secure_filename(img_f.filename).split('.')[-1]
         img_f.save('static/img/' + img_name)
         resize_image(img_name)
         book_f = form.book.data
-        book_f_name = form.title.data + form.author.data + form.date.data + '.' + \
+        book_f_name = form.title.data + form.author.data + \
+                      form.date.data + '.' + \
                       secure_filename(book_f.filename).split('.')[-1]
         book_f.save('static/files/' + book_f_name)
         book = Book(title=form.title.data,
@@ -211,8 +290,11 @@ def add_book():
                            title='Добавление книги')
 
 
+# удаление книги
 @app.route('/del_book', methods=['GET', 'POST'])
 def del_book():
+    # проверяем на авторизованного администратора
+    # если не админ, посылаем на славную страницу
     if 'id' not in session:
         return redirect('/index')
     if session['id'] != 1:
@@ -237,17 +319,22 @@ def del_book():
     return redirect('/profile')
 
 
+# изменение книги
 @app.route('/change_book', methods=['GET', 'POST'])
 def change_book():
+    # проверяем на авторизованного администратора
+    # если не админ, посылаем на славную страницу
     if session['id'] != 1:
         return redirect('/index')
     if request.method == 'GET':
-        return render_template('change_book.html', Book=Book, book=0, choose=True)
+        return render_template('change_book.html', Book=Book,
+                               book=0, choose=True)
     elif request.method == 'POST':
         if request.form.get('confirm_book'):
             book_title = request.form.get('book')
             book = Book.query.filter_by(title=book_title).first()
-            return render_template('change_book.html', Book=Book, cur_book=book, choose=False)
+            return render_template('change_book.html', Book=Book,
+                                   cur_book=book, choose=False)
         elif request.form.get('change_book'):
             book_id = request.form.get('book_id')
             title = request.form.get('title')
@@ -264,58 +351,74 @@ def change_book():
             return redirect('/profile')
 
 
+# регистрация
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    # проверяем на авторизованного пользователя
+    # если уже авторизован, посылаем на славную страницу
     if 'id' in session:
         return redirect('/index')
     form = RegisterForm()
     if form.validate_on_submit():
         users = Bookworm.query.all()
         if form.username.data in [u.username for u in users]:
-            render_template("register.html", title='Регистрация пользователя', form=form, error=True)
+            render_template("register.html",
+                            title='Регистрация пользователя',
+                            form=form, error=True)
         else:
             user = Bookworm(username=form.username.data,
                             name=form.name.data,
                             surname=form.surname.data,
                             email=form.email.data,
-                            password=generate_password_hash(form.password.data),
+                            password=generate_password_hash(form.
+                                                            password
+                                                            .data),
                             about=form.about.data)
             db.session.add(user)
             db.session.commit()
             session['username'] = form.username.data
-            session['id'] = Bookworm.query.filter_by(username=session['username']).first().id
+            session['id'] = Bookworm.query. \
+                filter_by(username=session['username']).first().id
             return redirect('/index')
     return render_template("register.html",
                            title='Регистрация пользователя',
                            form=form)
 
 
+# страница со всеми книгами
 @app.route('/books/<sort>')
 def books(sort):
+    # проверяем на авторизованного пользователя
+    # если не авторизован, посылаем на славную страницу
     if 'username' not in session:
         return redirect('/login')
-    if sort == 'default':
-        books_list = [Book.query.all()[i: i + 3 if i + 3 < len(Book.query.all()) else None] for i in
+    if sort == 'default':  # изначально сортировки нет
+        books_list = [Book.query.all()[i: i + 3 if
+        i + 3 < len(Book.query.all()) else None] for i in
                       range(0, len(Book.query.all()), 3)]
         return render_template('books.html',
                                books=books_list,
                                session=session,
                                title='Все книги',
                                sort=False)
-    elif sort == 'abc_sorting':
-        books_list = [
-            sorted(Book.query.all(), key=lambda x: x.title)[i: i + 3 if i + 3 < len(Book.query.all()) else None] for i
-            in
-            range(0, len(Book.query.all()), 3)]
-        return render_template('books.html',
-                               books=books_list,
-                               session=session,
-                               title='Все книги',
-                               sort=True)
-    elif sort == 'author_sorting':
+    elif sort == 'abc_sorting':  # сортировка по алфавиту
         books_list = [
             sorted(Book.query.all(),
-                   key=lambda x: (x.author, x.title))[i: i + 3 if i + 3 < len(Book.query.all()) else None] for i
+                   key=lambda x: x.title)[i: i + 3 if
+            i + 3 < len(Book.query.all()) else None] for i
+            in
+            range(0, len(Book.query.all()), 3)]
+        return render_template('books.html',
+                               books=books_list,
+                               session=session,
+                               title='Все книги',
+                               sort=True)
+    elif sort == 'author_sorting':  # сортировка по имени автора
+        books_list = [
+            sorted(Book.query.all(),
+                   key=lambda x: (x.author,
+                                  x.title))[i: i + 3 if
+            i + 3 < len(Book.query.all()) else None] for i
             in
             range(0, len(Book.query.all()), 3)]
         return render_template('books.html',
@@ -325,14 +428,17 @@ def books(sort):
                                sort=True)
 
 
+# страница для определенной книги
 @app.route('/book/<int:book_id>', methods=['GET', 'POST'])
 def book(book_id):
+    # проверяем на авторизованного пользователя
+    # если не авторизован, посылаем на славную страницу
     if 'username' not in session:
         return redirect('/login')
     user = Bookworm.query.filter_by(id=session['id']).first()
     favourite_books = user.favourite_books
     comment_form = CommentForm()
-    if comment_form.validate_on_submit():
+    if comment_form.validate_on_submit():  # добавление комментария
         comment = Comment(title=comment_form.title.data,
                           rating=comment_form.rating.data,
                           about=comment_form.about.data)
@@ -340,7 +446,7 @@ def book(book_id):
         book.Comment.append(comment)
         db.session.commit()
         return redirect('/book/{}'.format(book_id))
-    if request.method == 'POST':
+    if request.method == 'POST':  # добавить/удалить из избранного
         if not favourite_books:
             user.favourite_books = str(book_id)
         else:
@@ -350,7 +456,11 @@ def book(book_id):
             else:
                 favourite_books.append(str(book_id))
             user.favourite_books = ' '.join(sorted(favourite_books,
-                                                   key=lambda x: Book.query.filter_by(id=int(x)).first().title))
+                                                   key=lambda x:
+                                                   Book.query.
+                                                   filter_by
+                                                   (id=int(x)).
+                                                   first().title))
         db.session.commit()
         return redirect('/book/{}'.format(book_id))
     elif request.method == 'GET':
@@ -363,10 +473,13 @@ def book(book_id):
         file = book.book
         button = ('Добавить в избранное',
                   'warning') if (not favourite_books or
-                                 str(book_id) not in favourite_books.split()) else ('Удалить из избранного',
-                                                                                    'danger')
+                                 str(book_id) not
+                                 in favourite_books.split()) \
+            else ('Удалить из избранного',
+                  'danger')
         comments = book.Comment
-        comments = sorted(comments, key=lambda x: (-len(x.rating), x.title))
+        comments = sorted(comments, key=lambda x: (-len(x.rating),
+                                                   x.title))
         return render_template('book.html', title=title,
                                author=author,
                                about=about,
@@ -379,8 +492,11 @@ def book(book_id):
                                session=session)
 
 
+# удаление комментария
 @app.route('/delete_comment/<int:comment_id>')
 def delete_comment(comment_id):
+    # проверяем на авторизованного администратора
+    # если не админ, посылаем на славную страницу
     if 'id' not in session or session['id'] != 1:
         return redirect('/index')
     comment = Comment.query.filter_by(id=comment_id).first()
@@ -391,6 +507,7 @@ def delete_comment(comment_id):
     return redirect('/book/{}'.format(book_id))
 
 
+# о проекте
 @app.route('/about')
 def about():
     if 'username' not in session:
@@ -399,6 +516,7 @@ def about():
                            title='О нас')
 
 
+# страничка с "пожертвованиями"
 @app.route('/donate')
 def donate():
     if 'username' not in session:
