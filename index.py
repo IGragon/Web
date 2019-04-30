@@ -28,15 +28,15 @@ db = SQLAlchemy(app)
 # форма регистрации
 class RegisterForm(FlaskForm):
     username = StringField('Имя', validators=[DataRequired(),
-                                              Length(1, 120)])
+                           Length(1, 120)])
     name = StringField('Настоящее имя', validators=[DataRequired()])
     surname = StringField('Фамилия', validators=[DataRequired()])
     email = StringField('Email', validators=[DataRequired(),
                                              Email()])
     password = PasswordField('Пароль', validators=[DataRequired(),
-                                                   Length(4, 120)])
+                             Length(4, 120)])
     about = TextAreaField('О себе', validators=[DataRequired(),
-                                                Length(1, 1000)])
+                          Length(1, 1000)])
     submit = SubmitField('Присоединиться!')
 
 
@@ -54,7 +54,7 @@ class AddBookForm(FlaskForm):
                                     Length(1, 120)])
     author = StringField('Автор', validators=[DataRequired()])
     about = TextAreaField('О книге', validators=[DataRequired(),
-                                                 Length(100, 1000)])
+                          Length(100, 1000)])
     date = StringField('Дата публикации',
                        validators=[DataRequired()])
     img = FileField('Обложка', validators=[FileRequired()])
@@ -72,16 +72,16 @@ class AddBookToFavourite(FlaskForm):
 # форма для комментария
 class CommentForm(FlaskForm):
     title = StringField('Заголовок', validators=[DataRequired(),
-                                                 Length(1, 120)])
+                        Length(1, 120)])
     rating = SelectField('Оценка', choices=[('★★★★★', '★★★★★'),
-                                            ('★★★★', '★★★★'),
-                                            ('★★★', '★★★'),
-                                            ('★★', '★★'),
-                                            ('★', '★')],
+                         ('★★★★', '★★★★'),
+                         ('★★★', '★★★'),
+                         ('★★', '★★'),
+                         ('★', '★')],
                          validators=[DataRequired()])
     about = TextAreaField('Комментарий', validators=[DataRequired(),
-                                                     Length(1,
-                                                            1000)])
+                          Length(1,
+                          1000)])
     submit = SubmitField('Отправить')
 
 
@@ -266,14 +266,14 @@ def add_book():
     if form.validate_on_submit():
         img_f = form.img.data
         img_name = form.title.data + form.author.data + \
-                   form.date.data + '.' + \
-                   secure_filename(img_f.filename).split('.')[-1]
+            form.date.data + '.' + \
+            secure_filename(img_f.filename).split('.')[-1]
         img_f.save('static/img/' + img_name)
         resize_image(img_name)
         book_f = form.book.data
         book_f_name = form.title.data + form.author.data + \
-                      form.date.data + '.' + \
-                      secure_filename(book_f.filename).split('.')[-1]
+            form.date.data + '.' + \
+            secure_filename(book_f.filename).split('.')[-1]
         book_f.save('static/files/' + book_f_name)
         book = Book(title=form.title.data,
                     author=form.author.data,
@@ -394,7 +394,7 @@ def books(sort):
         return redirect('/login')
     if sort == 'default':  # изначально сортировки нет
         books_list = [Book.query.all()[i: i + 3 if
-        i + 3 < len(Book.query.all()) else None] for i in
+                      i + 3 < len(Book.query.all()) else None] for i in
                       range(0, len(Book.query.all()), 3)]
         return render_template('books.html',
                                books=books_list,
